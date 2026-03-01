@@ -1,4 +1,4 @@
-package com.example.praktam2_2417051035
+package com.example.praktam_2417051035
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

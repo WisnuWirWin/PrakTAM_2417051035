@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.praktam2_2417051035"
+    namespace = "com.example.praktam_2417051035"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1

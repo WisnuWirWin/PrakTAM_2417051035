@@ -1,4 +1,4 @@
-package com.example.praktam2_2417051035
+package com.example.praktam_2417051035
 
 import org.junit.Test
 
