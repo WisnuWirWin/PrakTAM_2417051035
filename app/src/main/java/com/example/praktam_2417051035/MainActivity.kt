@@ -194,7 +194,10 @@ fun ActivityRowItem(activity: Activity) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column {
             Image(
@@ -208,12 +211,12 @@ fun ActivityRowItem(activity: Activity) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text = activity.nama,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Deskripsi : ${activity.deskripsi}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -265,13 +268,13 @@ fun DetailScreen(activity: Activity){
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = activity.deskripsi,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = Color.White
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = activity.nama,
-                style = MaterialTheme.typography.headlineLarge,
+                text = activity.poin.toString(),
+                style = MaterialTheme.typography.bodyMedium,
                 color = Color.White
             )
             Spacer(modifier = Modifier.height(16.dp))
