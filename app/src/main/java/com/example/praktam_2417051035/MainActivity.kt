@@ -1,6 +1,20 @@
 package com.example.praktam_2417051035
 
 import android.os.Bundle
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.navigation.NavHostController
+import androidx.compose.foundation.clickable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -52,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHost
 import com.example.praktam_2417051035.model.ActivitySource
 import com.example.praktam_2417051035.ui.theme.PrakTAM2_2417051035Theme
 import model.Activity
@@ -62,6 +77,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrakTAM2_2417051035Theme {
+                val navController = rememberNavController()
                 Box(modifier = Modifier.fillMaxSize()){
                     Image(
                         painter = painterResource(id = R.drawable.bg),
@@ -71,7 +87,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 //                HomeScreen()
-                DaftarKegiatanScreen()
+                AppNavigation(navController)
             }
         }
     }
@@ -138,7 +154,7 @@ fun Coin(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun DaftarKegiatanScreen(){
+fun DaftarKegiatanScreen(navController: NavController){
 //    Column(modifier = Modifier
 //        .fillMaxSize()
 //        .statusBarsPadding()
@@ -166,10 +182,12 @@ fun DaftarKegiatanScreen(){
             )
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                contentPadding = PaddingValues(horizontal = 2.dp)
             ) {
                 items(ActivitySource.dummyData){ activity ->
-                    ActivityRowItem(activity = activity)
+                    Box(modifier = Modifier.width(50.dp))
+                        ActivityItem(activity = activity, navController = navController)
                 }
             }
 
@@ -184,13 +202,13 @@ fun DaftarKegiatanScreen(){
         }
 
         items(ActivitySource.dummyData){ activity ->
-            DetailScreen(activity = activity)
+            ActivityItem(activity = activity, navController)
         }
     }
 }
 
 @Composable
-fun ActivityRowItem(activity: Activity) {
+fun ActivityRowItem(activity: Activity, navController: NavController) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
@@ -225,70 +243,166 @@ fun ActivityRowItem(activity: Activity) {
 }
 
 @Composable
-fun DetailScreen(activity: Activity){
-    var isFavorite by remember { mutableStateOf(false) }
-    Card(modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.onBackground
-        )
+fun ActivityItem(activity: Activity, navController: NavController) {
+    Card(
+        modifier = Modifier.width(290.dp)
+            .padding(horizontal = 4.dp)
+            .clickable {
+                navController.navigate("detail/${activity.nama}")
+            },
+        shape = RoundedCornerShape(12.dp),
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Box {
-                Image(
-                    painter = painterResource(id = activity.imageRes),
-                    contentDescription = activity.nama,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .height(200.dp),
-                    contentScale = ContentScale.Crop
+        Row(modifier = Modifier.padding(16.dp)) {
+            Image(painter = painterResource(id = activity.imageRes),
+                contentDescription = activity.nama,
+                modifier = Modifier.size(80.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = activity.nama,
+                    fontWeight = FontWeight.Bold
                 )
-                IconButton(
-                    onClick = { isFavorite = !isFavorite },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
+                Text(
+                    text = "Deskripsi : ${activity.deskripsi}",
+                    maxLines = 2,
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun AppNavigation(navController: androidx.navigation.NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") {
+            DaftarKegiatanScreen(navController)
+        }
+
+        composable("detail/{nama}") { backStackEntry ->
+            val nama = backStackEntry.arguments?.getString("nama")
+            val activity = ActivitySource.dummyData.find { it.nama == nama }
+            if (activity != null) {
+                DetailScreen(activity = activity, navController = navController, isFullScreen = true)
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(activity: Activity, navController: NavController, isFullScreen : Boolean = false){
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var isFavorite by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(6.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onBackground
+            )
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Box {
+                    Image(
+                        painter = painterResource(id = activity.imageRes),
+                        contentDescription = activity.nama,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .height(200.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = { isFavorite = !isFavorite },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "Favorite Icon",
+                            tint = if (isFavorite) Color.Red else Color.Black
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = activity.nama,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = activity.deskripsi,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = activity.poin.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (isFullScreen) {
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                isLoading = true
+                                delay(2000)
+                                snackbarHostState.showSnackbar("Aktivitas Berhasil dipilih!")
+                                isLoading = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Tunggu Sebentar...")
+                        } else {
+                            Text("Pilih")
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        if (isFullScreen) {
+                            navController.popBackStack()
+                        } else {
+                            navController.navigate("detail/${activity.nama}")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Favorite Icon",
-                        tint = if (isFavorite) Color.Red else Color.Black
+                    Text(
+                        if (isFullScreen) "Kembali" else "Lihat Detail",
+                        color = Color.White
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = activity.nama,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = activity.deskripsi,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = activity.poin.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Pilih Aktivitas",
-                    color = Color.White
-                )
-            }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -306,8 +420,10 @@ fun DetailScreen(activity: Activity){
                     )
 
                 }
+
 //                  HomeScreen()
-                    DaftarKegiatanScreen()
+                val navController = rememberNavController()
+                AppNavigation(navController)
             }
         }
     }
