@@ -67,9 +67,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHost
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import network.RetrofitClient
 import com.example.praktam_2417051035.model.ActivitySource
 import com.example.praktam_2417051035.ui.theme.PrakTAM2_2417051035Theme
 import model.Activity
+import coil.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,7 +158,23 @@ fun Coin(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun DaftarKegiatanScreen(navController: NavController){
+fun DaftarKegiatanScreen(navController: NavController, onActivitiesLoaded: (List<Activity>) -> Unit = {}){
+    var activities by remember { mutableStateOf(emptyList<Activity>()) }
+    var isError by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        try {
+            activities = RetrofitClient.instant.getActivity()
+            onActivitiesLoaded(activities))
+            isLoading = false
+            isError = false
+        } catch (e: Exception) {
+            isLoading = false
+            isError = true
+        }
+    }
+
 //    Column(modifier = Modifier
 //        .fillMaxSize()
 //        .statusBarsPadding()
@@ -167,6 +187,35 @@ fun DaftarKegiatanScreen(navController: NavController){
 //        }
 //    }
 
+    if (isLoading){
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            CircularProgressIndicator()
+        }
+    } else if (isError || activities.isEmpty()){
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+            contentAlignment = Alignment.Center)
+        {
+            Column(horizontalAlignment = Alignment.CenterHorizontally)
+            {
+                Text(
+                    text = " Gagal memuat data",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pastikan koneksi internet anda menyala",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
     LazyColumn(modifier = Modifier
         .fillMaxSize()
         .statusBarsPadding(),
@@ -209,8 +258,12 @@ fun DaftarKegiatanScreen(navController: NavController){
 
 @Composable
 fun ActivityRowItem(activity: Activity, navController: NavController) {
+//    val context = LocalContext.current
+//    val resId = ActivitySource.getResourceId(context, activity.iamge_name)
+//    val ImageRes = if (resId != 0) resId else R.drawable.book
     Card(
-        modifier = Modifier.width(160.dp),
+        modifier = Modifier.width(160.dp)
+            .clickable{navController.navigate("detail/${activity.nama}")},
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
@@ -218,15 +271,17 @@ fun ActivityRowItem(activity: Activity, navController: NavController) {
         )
     ) {
         Column {
-            Image(
-                painter = painterResource(activity.imageRes),
+            AsyncImage(
+                model = activity.iamge_name,
                 contentDescription = activity.nama,
+                placeholder = painterResource(id = R.drawable.book),
+                error = painterResource(id = R.drawable.coin),
                 modifier = Modifier
                     .fillMaxSize()
                     .height(100.dp),
                 contentScale = ContentScale.Crop
             )
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = activity.nama,
                     style = MaterialTheme.typography.titleMedium,
@@ -277,17 +332,20 @@ fun ActivityItem(activity: Activity, navController: NavController) {
 
 @Composable
 fun AppNavigation(navController: androidx.navigation.NavHostController) {
+    var activities by remember { mutableStateOf(emptyList<Activity>()) }
     NavHost(
-        navController = navController,
+        navController = navController as androidx.navigation.NavHostController,
         startDestination = "home"
     ) {
         composable("home") {
-            DaftarKegiatanScreen(navController)
+            DaftarKegiatanScreen(navController) { fetchedActivities ->
+                activities = fetchedActivities
+            }
         }
 
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
-            val activity = ActivitySource.dummyData.find { it.nama == nama }
+            val activity = activities.find { it.nama == nama }
             if (activity != null) {
                 DetailScreen(activity = activity, navController = navController, isFullScreen = true)
             }
