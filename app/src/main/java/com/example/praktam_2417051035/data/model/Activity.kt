@@ -1,6 +1,5 @@
-package model
+package com.example.praktam_2417051035.data.model
 import com.google.gson.annotations.SerializedName
-import androidx.annotation.DrawableRes
 
 data class Activity(
     @SerializedName("nama")
@@ -12,6 +11,6 @@ data class Activity(
     @SerializedName("poin")
     val poin: Int,
 
-    @SerializedName("imageUrl")
-    val iamge_name: String
+    @SerializedName("image_url")
+    val image_url: String
 )

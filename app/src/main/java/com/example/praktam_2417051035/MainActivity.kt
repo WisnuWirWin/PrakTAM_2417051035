@@ -1,79 +1,50 @@
 package com.example.praktam_2417051035
 
 import android.os.Bundle
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.navigation.NavHostController
-import androidx.compose.foundation.clickable
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavController
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHost
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
-import network.RetrofitClient
-import com.example.praktam_2417051035.model.ActivitySource
-import com.example.praktam_2417051035.ui.theme.PrakTAM2_2417051035Theme
-import model.Activity
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.praktam_2417051035.ui.theme.PrakTAM2_2417051035Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.example.praktam_2417051035.data.model.Activity
+import com.example.praktam_2417051035.data.api.RetrofitClient
+import com.example.praktam_2417051035.data.repository.ActivityRepository
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,72 +53,59 @@ class MainActivity : ComponentActivity() {
         setContent {
             PrakTAM2_2417051035Theme {
                 val navController = rememberNavController()
-                Box(modifier = Modifier.fillMaxSize()){
+                Box(modifier = Modifier.fillMaxSize()) {
                     Image(
                         painter = painterResource(id = R.drawable.bg),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+                    AppNavigation(navController)
                 }
-//                HomeScreen()
-                AppNavigation(navController)
             }
         }
     }
 }
 
 @Composable
-fun HomeScreen(){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(100.dp)
-        .padding(top = 50.dp, start = 20.dp, end = 20.dp)) {
-        Levelling(modifier =Modifier
-            .align(Alignment.TopStart))
-        Coin(modifier = Modifier
-            .align(Alignment.TopEnd))
+fun HomeScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(top = 50.dp, start = 20.dp, end = 20.dp)
+    ) {
+        Levelling(modifier = Modifier.align(Alignment.TopStart))
+        Coin(modifier = Modifier.align(Alignment.TopEnd))
     }
 }
 
 @Composable
-fun Levelling(modifier: Modifier = Modifier){
+fun Levelling(modifier: Modifier = Modifier) {
     val levelling = painterResource(R.drawable.levelling)
-    val Poppins = FontFamily(
-        Font(R.font.poppins_bold)
-    )
-    Box(modifier = Modifier
-        .width(100.dp)
-        .height(100.dp)
-    ) {
+    val poppins = FontFamily(Font(R.font.poppins_bold))
+    Box(modifier = modifier.width(100.dp).height(100.dp)) {
         Image(
             painter = levelling,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
         )
-
         Text(
             text = "Level 1",
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            fontFamily = Poppins,
+            fontFamily = poppins,
             fontSize = 15.sp,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 12.dp, bottom = 3.dp)
+            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 12.dp, bottom = 3.dp)
         )
     }
 }
 
 @Composable
-fun Coin(modifier: Modifier = Modifier){
+fun Coin(modifier: Modifier = Modifier) {
     val levelling = painterResource(R.drawable.levelling)
-    Box(modifier = Modifier
-        .width(400.dp)
-        .height(100.dp)
-        .padding(start = 260.dp)
-    ) {
+    Box(modifier = modifier.width(120.dp).height(100.dp)) {
         Image(
             painter = levelling,
             contentDescription = null,
@@ -157,141 +115,118 @@ fun Coin(modifier: Modifier = Modifier){
     }
 }
 
-@Composable
-fun DaftarKegiatanScreen(navController: NavController, onActivitiesLoaded: (List<Activity>) -> Unit = {}){
-    var activities by remember { mutableStateOf(emptyList<Activity>()) }
-    var isError by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
+@Composable
+fun DaftarKegiatanScreen(navController: NavController, onActivitiesLoaded: (List<Activity>) -> Unit = {}) {
+    var activities by remember { mutableStateOf(emptyList<Activity>()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+    var retryTrigger by remember { mutableStateOf(0) }
+    val repository = remember { ActivityRepository() }
+
+    LaunchedEffect(retryTrigger) {
+        isLoading = true
+        isError = false
         try {
-            activities = RetrofitClient.instant.getActivity()
-            onActivitiesLoaded(activities))
+            val response = repository.getActivity()
+            activities = response
+            onActivitiesLoaded(response)
             isLoading = false
-            isError = false
         } catch (e: Exception) {
+            Log.e("API_ERROR", "Gagal load JSON: ${e.message}")
             isLoading = false
             isError = true
         }
     }
 
-//    Column(modifier = Modifier
-//        .fillMaxSize()
-//        .statusBarsPadding()
-//        .verticalScroll(rememberScrollState())
-//        .padding( 24.dp)
-//    ) {
-//        ActivitySource.dummyData.forEach{ activity ->
-//            DetailScreen(activity = activity)
-//            Spacer(modifier = Modifier.height(24.dp))
-//        }
-//    }
-
-    if (isLoading){
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-            CircularProgressIndicator()
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color(0xFFE64A19))
         }
-    } else if (isError || activities.isEmpty()){
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-            contentAlignment = Alignment.Center)
-        {
-            Column(horizontalAlignment = Alignment.CenterHorizontally)
-            {
+    } else if (isError) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = " Gagal memuat data",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Red
+                    text = "Gagal Memuat Data",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(0xFFE64A19),
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Pastikan koneksi internet anda menyala",
+                    text = "Pastikan koneksi internet Anda menyala",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    modifier = Modifier.fillMaxSize()
+                    textAlign = TextAlign.Center
                 )
-            }
-        }
-    }
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .statusBarsPadding(),
-        contentPadding = PaddingValues(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        item {
-            Text(
-                text = "Rekomendasi Populer",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                contentPadding = PaddingValues(horizontal = 2.dp)
-            ) {
-                items(ActivitySource.dummyData){ activity ->
-                    Box(modifier = Modifier.width(50.dp))
-                        ActivityItem(activity = activity, navController = navController)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = { retryTrigger++ },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE64A19)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.width(150.dp)
+                ) {
+                    Text("Coba Lagi", color = Color.White)
                 }
             }
-
-            Spacer(modifier = Modifier.height(45.dp))
-
-            Text(
-                text = "Daftar Kegiatan",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
         }
-
-        items(ActivitySource.dummyData){ activity ->
-            ActivityItem(activity = activity, navController)
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().statusBarsPadding(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                Text(
+                    text = "Rekomendasi Populer",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(activities) { activity ->
+                        ActivityRowItem(activity = activity, navController = navController)
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Daftar Menu Lengkap",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+            items(activities) { activity ->
+                ActivityItem(activity = activity, navController = navController)
+            }
         }
     }
 }
 
 @Composable
 fun ActivityRowItem(activity: Activity, navController: NavController) {
-//    val context = LocalContext.current
-//    val resId = ActivitySource.getResourceId(context, activity.iamge_name)
-//    val ImageRes = if (resId != 0) resId else R.drawable.book
     Card(
-        modifier = Modifier.width(160.dp)
-            .clickable{navController.navigate("detail/${activity.nama}")},
+        modifier = Modifier
+            .width(160.dp)
+            .clickable { navController.navigate("detail/${activity.nama}") },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column {
             AsyncImage(
-                model = activity.iamge_name,
-                contentDescription = activity.nama,
-                placeholder = painterResource(id = R.drawable.book),
-                error = painterResource(id = R.drawable.coin),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .height(100.dp),
-                contentScale = ContentScale.Crop
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(activity.image_url) // Pastikan JSON berisi URL lengkap (http...)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(R.drawable.book), // Placeholder icon buku
+                error = painterResource(R.drawable.gym)        // Gambar gym muncul jika URL salah
             )
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = activity.nama,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Deskripsi : ${activity.deskripsi}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(text = activity.nama, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text(text = "poin ${activity.poin}", color = Color(0xFFE64A19), fontSize = 12.sp)
             }
         }
     }
@@ -299,50 +234,66 @@ fun ActivityRowItem(activity: Activity, navController: NavController) {
 
 @Composable
 fun ActivityItem(activity: Activity, navController: NavController) {
+    var isFavorite by remember { mutableStateOf(false) }
     Card(
-        modifier = Modifier.width(290.dp)
-            .padding(horizontal = 4.dp)
-            .clickable {
-                navController.navigate("detail/${activity.nama}")
-            },
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navController.navigate("detail/${activity.nama}") },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp)) {
-            Image(painter = painterResource(id = activity.imageRes),
-                contentDescription = activity.nama,
-                modifier = Modifier.size(80.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = activity.nama,
-                    fontWeight = FontWeight.Bold
+        Column {
+            Box {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(activity.image_url)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.book),
+                    error = painterResource(R.drawable.gym)
                 )
-                Text(
-                    text = "Deskripsi : ${activity.deskripsi}",
-                    maxLines = 2,
-                )
+                IconButton(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = null,
+                        tint = if (isFavorite) Color.Red else Color.White
+                    )
+                }
             }
-
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = activity.nama, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(text = activity.deskripsi, style = MaterialTheme.typography.bodyMedium, color = Color.Gray, maxLines = 2)
+                Text(text = "Jumlah Poin ${activity.poin}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 4.dp))
+                Button(
+                    onClick = { navController.navigate("detail/${activity.nama}") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE64A19)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Pesan", color = Color.White)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AppNavigation(navController: androidx.navigation.NavHostController) {
+fun AppNavigation(navController: NavHostController) {
     var activities by remember { mutableStateOf(emptyList<Activity>()) }
-    NavHost(
-        navController = navController as androidx.navigation.NavHostController,
-        startDestination = "home"
-    ) {
+    NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            DaftarKegiatanScreen(navController) { fetchedActivities ->
-                activities = fetchedActivities
+            Column(modifier = Modifier.fillMaxSize()) {
+                HomeScreen()
+                DaftarKegiatanScreen(navController) { activities = it }
             }
         }
-
         composable("detail/{nama}") { backStackEntry ->
             val nama = backStackEntry.arguments?.getString("nama")
             val activity = activities.find { it.nama == nama }
@@ -354,134 +305,82 @@ fun AppNavigation(navController: androidx.navigation.NavHostController) {
 }
 
 @Composable
-fun DetailScreen(activity: Activity, navController: NavController, isFullScreen : Boolean = false){
-    var isLoading by remember { mutableStateOf(false) }
+fun DetailScreen(activity: Activity, navController: NavController, isFullScreen: Boolean = false) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var isFavorite by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxWidth()) {
+    var isLoadingButton by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(6.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onBackground
-            )
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground)
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column {
                 Box {
-                    Image(
-                        painter = painterResource(id = activity.imageRes),
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(activity.image_url)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = activity.nama,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .height(200.dp),
-                        contentScale = ContentScale.Crop
+                        modifier = Modifier.fillMaxWidth().height(250.dp),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.book),
+                        error = painterResource(R.drawable.gym)
                     )
                     IconButton(
                         onClick = { isFavorite = !isFavorite },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
+                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favorite Icon",
-                            tint = if (isFavorite) Color.Red else Color.Black
+                            contentDescription = null,
+                            tint = if (isFavorite) Color.Red else Color.White
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = activity.nama,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = activity.deskripsi,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = activity.poin.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (isFullScreen) {
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                isLoading = true
-                                delay(2000)
-                                snackbarHostState.showSnackbar("Aktivitas Berhasil dipilih!")
-                                isLoading = false
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(text = activity.nama, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = activity.deskripsi, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Jumlah Poin ${activity.poin}", color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (isFullScreen) {
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    isLoadingButton = true
+                                    delay(2000)
+                                    snackbarHostState.showSnackbar("Berhasil dipesan!")
+                                    isLoadingButton = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoadingButton,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE64A19))
+                        ) {
+                            if (isLoadingButton) {
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                            } else {
+                                Text("Pesan Sekarang")
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoading
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Tunggu Sebentar...")
-                        } else {
-                            Text("Pilih")
                         }
                     }
-                }
-
-                Button(
-                    onClick = {
-                        if (isFullScreen) {
-                            navController.popBackStack()
-                        } else {
-                            navController.navigate("detail/${activity.nama}")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        if (isFullScreen) "Kembali" else "Lihat Detail",
-                        color = Color.White
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.fillMaxWidth(),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White)
+                    ) {
+                        Text("Kembali", color = Color.White)
+                    }
                 }
             }
         }
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
-
-    @Preview(showBackground = true, showSystemUi = true,)
-    @Composable
-    fun GreetingPreview() {
-        PrakTAM2_2417051035Theme {
-            PrakTAM2_2417051035Theme {
-                Box(modifier = Modifier.fillMaxSize()){
-                    Image(
-                        painter = painterResource(id = R.drawable.bg),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                }
-
-//                  HomeScreen()
-                val navController = rememberNavController()
-                AppNavigation(navController)
-            }
-        }
-    }
